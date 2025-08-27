@@ -3,20 +3,120 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Chat krle bhai</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.css"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #e5ddd5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .chat-container {
+        width: 400px;
+        height: 600px;
+        background: #fff;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+      }
+      .chat-header {
+        background: #075e54;
+        color: #fff;
+        padding: 15px;
+        font-weight: bold;
+      }
+      #chat {
+        flex: 1;
+        padding: 10px;
+        list-style: none;
+        overflow-y: auto;
+        background: #ece5dd;
+      }
+      #chat li {
+        margin: 5px 0;
+        padding: 10px;
+        border-radius: 8px;
+        max-width: 70%;
+        word-wrap: break-word;
+      }
+      .me {
+        background: #dcf8c6;
+        margin-left: auto;
+        text-align: right;
+      }
+      .other {
+        background: #fff;
+        margin-right: auto;
+        text-align: left;
+      }
+      .chat-footer {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        background: #f0f0f0;
+      }
+      #message {
+        flex: 1;
+        padding: 10px;
+        border-radius: 20px;
+        border: none;
+        outline: none;
+        margin-right: 5px;
+        background: #fff;
+      }
+      button {
+        background: #075e54;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 50%;
+        cursor: pointer;
+        margin-left: 5px;
+      }
+      #typing {
+        font-size: 12px;
+        color: gray;
+        margin-left: 10px;
+        margin-bottom: 5px;
+      }
+      emoji-picker {
+        position: absolute;
+        bottom: 70px;
+        right: 20px;
+        display: none;
+      }
+    </style>
   </head>
   <body>
-    <h2>Web Socket Chat App</h2>
-    <input type="text" placeholder="Type a message" id="message" />
-    <button onclick="sendMsg()">click</button>
-    <p id="typing"></p>
-    <ul id="chat"></ul>
+    <div class="chat-container">
+      <div class="chat-header">ganpati bappa morya 🙏🏻</div>
+      <ul id="chat"></ul>
+      <p id="typing"></p>
+      <div class="chat-footer">
+        <input type="text" placeholder="Likh le khuch" id="message" />
+        <button onclick="sendMsg()">➤</button>
+      </div>
+    </div>
+    <emoji-picker id="emojiPicker"></emoji-picker>
 
-    <script>
+    <script type="module">
+      import "https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js";
+
       const socket = new WebSocket("ws://localhost:3000");
       const chatBox = document.getElementById("chat");
       const typingEL = document.getElementById("typing");
       const input = document.getElementById("message");
+      const emojiBtn = document.getElementById("emojiBtn");
+      const emojiPicker = document.getElementById("emojiPicker");
 
       socket.onmessage = (event) => {
         if (event.data.includes("typing")) {
@@ -25,17 +125,38 @@
         } else {
           let li = document.createElement("li");
           li.textContent = event.data;
+          li.classList.add("other");
           chatBox.appendChild(li);
+          chatBox.scrollTop = chatBox.scrollHeight;
         }
       };
 
       function sendMsg() {
+        if (input.value.trim() === "") return;
+
         socket.send(input.value);
+
+        let li = document.createElement("li");
+        li.textContent = input.value;
+        li.classList.add("me");
+        chatBox.appendChild(li);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
         input.value = "";
       }
+      window.sendMsg = sendMsg; 
 
       input.addEventListener("input", () => {
-        socket.send("typing" + input.value);
+        socket.send("typing...");
+      });
+
+      emojiBtn.addEventListener("click", () => {
+        emojiPicker.style.display =
+          emojiPicker.style.display === "none" ? "block" : "none";
+      });
+
+      emojiPicker.addEventListener("emoji-click", (event) => {
+        input.value += event.detail.unicode;
       });
     </script>
   </body>
